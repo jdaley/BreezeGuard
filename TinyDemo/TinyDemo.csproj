@@ -128,6 +128,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TinyContext.cs" />
     <Compile Include="TinyContextProvider.cs" />
+    <Compile Include="TinyDatabaseInitializer.cs" />
     <Compile Include="TinyMetadataContext.cs" />
   </ItemGroup>
   <ItemGroup>
