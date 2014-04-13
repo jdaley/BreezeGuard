@@ -14,7 +14,16 @@ namespace TinyDemo.Controllers
     [BreezeController]
     public class EntitiesController : ApiController
     {
-        private TinyContextProvider provider = new TinyContextProvider();
+        private TinyContextProvider provider;
+        private User user;
+
+        public EntitiesController()
+        {
+            this.provider = new TinyContextProvider();
+
+            int userId = 1; // get the logged in user ID, perhaps from a session cookie
+            this.user = this.provider.Context.Users.Find(userId);
+        }
 
         [HttpGet]
         public string Metadata()
@@ -25,19 +34,19 @@ namespace TinyDemo.Controllers
         [HttpGet]
         public IQueryable<Customer> Customers()
         {
-            return this.provider.Context.Customers;
+            return this.provider.Context.Customers.Where(c => c.Id == this.user.CustomerId);
         }
 
         [HttpGet]
         public IQueryable<Order> Orders()
         {
-            return this.provider.Context.Orders;
+            return this.provider.Context.Orders.Where(o => o.CustomerId == this.user.CustomerId);
         }
 
         [HttpGet]
         public IQueryable<User> Users()
         {
-            return this.provider.Context.Users;
+            return this.provider.Context.Users.Where(u => u.CustomerId == this.user.CustomerId);
         }
 
         [HttpPost]
