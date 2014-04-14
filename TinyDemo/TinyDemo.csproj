@@ -117,6 +117,7 @@
   <ItemGroup>
     <Compile Include="App_Start\BreezeWebApiConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="BreezeGuardQueryableAttribute.cs" />
     <Compile Include="Controllers\EntitiesController.cs" />
     <Compile Include="Entities\Customer.cs" />
     <Compile Include="Entities\Order.cs" />

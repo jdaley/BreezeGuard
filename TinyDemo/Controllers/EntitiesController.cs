@@ -1,5 +1,6 @@
 ﻿using Breeze.ContextProvider;
 using Breeze.WebApi2;
+using BreezeGuard;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,10 @@ using TinyDemo.Entities;
 
 namespace TinyDemo.Controllers
 {
-    [BreezeController]
+    [BreezeGuardQueryable]
+    [MetadataToHttpResponse]
+    [EntityErrorsFilter]
+    [BreezeGuardController]
     public class EntitiesController : ApiController
     {
         private TinyContextProvider provider;

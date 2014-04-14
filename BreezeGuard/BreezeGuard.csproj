@@ -95,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BreezeGuardContractResolver.cs" />
+    <Compile Include="BreezeGuardControllerAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
