@@ -12,9 +12,6 @@ using TinyDemo.Entities;
 
 namespace TinyDemo.Controllers
 {
-    [BreezeGuardQueryable(typeof(TinyContextProvider))]
-    [MetadataToHttpResponse]
-    [EntityErrorsFilter]
     [BreezeGuardController(typeof(TinyContextProvider))]
     public class EntitiesController : ApiController
     {

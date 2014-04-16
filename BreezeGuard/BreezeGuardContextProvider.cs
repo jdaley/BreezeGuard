@@ -14,6 +14,9 @@ namespace BreezeGuard
 {
     public abstract class BreezeGuardContextProvider<TContext> : ContextProvider where TContext : DbContext
     {
+        private static string jsonMetadata = null;
+        private static object jsonMetadataLock = new object();
+
         private TContext context;
         private ApiModelBuilder model;
 
@@ -46,11 +49,25 @@ namespace BreezeGuard
             return Activator.CreateInstance<TContext>();
         }
 
+        protected virtual DbContext CreateMetadataContext()
+        {
+            return MetadataContextHelper.EmitMetadataContext<TContext>();
+        }
+
         protected abstract void OnModelCreating(ApiModelBuilder modelBuilder);
 
         protected override string BuildJsonMetadata()
         {
-            throw new NotImplementedException();
+            lock (jsonMetadataLock)
+            {
+                if (jsonMetadata == null)
+                {
+                    DbContext metadataContext = CreateMetadataContext();
+                    jsonMetadata = MetadataContextHelper.GetMetadataFromContext(metadataContext);
+                }
+
+                return jsonMetadata;
+            }
         }
 
         public override IDbConnection GetDbConnection()

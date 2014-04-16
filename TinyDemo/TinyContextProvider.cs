@@ -12,9 +12,9 @@ namespace TinyDemo
 {
     public class TinyContextProvider : BreezeGuardContextProvider<TinyContext>
     {
-        protected override string BuildJsonMetadata()
+        protected override DbContext CreateMetadataContext()
         {
-            return EFContextProvider<TinyMetadataContext>.GetMetadataFromContext(new TinyMetadataContext());
+            return new TinyMetadataContext();
         }
 
         protected override void OnModelCreating(ApiModelBuilder modelBuilder)

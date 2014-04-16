@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BreezeGuard;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace TinyDemo
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<User>().Ignore(u => u.Password);
+            MetadataContextHelper.OnModelCreating(modelBuilder, new TinyContextProvider());
         }
     }
 }

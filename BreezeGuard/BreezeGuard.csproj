@@ -103,6 +103,7 @@
     <Compile Include="BreezeGuardControllerAttribute.cs" />
     <Compile Include="BreezeGuardQueryableAttribute.cs" />
     <Compile Include="ExpressionHelper.cs" />
+    <Compile Include="MetadataContextHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

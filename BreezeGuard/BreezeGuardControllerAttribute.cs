@@ -6,6 +6,7 @@ using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http.Controllers;
+using System.Web.Http.Filters;
 
 namespace BreezeGuard
 {
@@ -20,10 +21,9 @@ namespace BreezeGuard
             this.ContextProviderType = contextProviderType;
         }
 
-        public new void Initialize(HttpControllerSettings controllerSettings, HttpControllerDescriptor controllerDescriptor)
+        protected override IFilterProvider GetQueryableFilterProvider(BreezeQueryableAttribute defaultFilter)
         {
-            controllerSettings.Formatters.Clear();
-            controllerSettings.Formatters.Add(GetJsonFormatter());
+            return base.GetQueryableFilterProvider(new BreezeGuardQueryableAttribute(this.ContextProviderType));
         }
 
         protected override MediaTypeFormatter GetJsonFormatter()
