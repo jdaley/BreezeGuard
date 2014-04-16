@@ -11,11 +11,23 @@ namespace BreezeGuard
 {
     public class BreezeGuardContractResolver : DefaultContractResolver
     {
+        public Type ContextProviderType { get; private set; }
+        private ApiModelBuilder model;
+
+        public BreezeGuardContractResolver(Type contextProviderType)
+        {
+            this.ContextProviderType = contextProviderType;
+            this.model = ApiModelCache.Get(contextProviderType);
+        }
+
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             JsonProperty property = base.CreateProperty(member, memberSerialization);
 
-            if (property.PropertyName == "Password")
+            ApiEntityTypeConfiguration entityTypeConfiguration;
+
+            if (this.model.Entities.TryGetValue(member.DeclaringType, out entityTypeConfiguration) &&
+                entityTypeConfiguration.IgnoredProperties.Keys.Contains(member))
             {
                 property.Ignored = true;
             }

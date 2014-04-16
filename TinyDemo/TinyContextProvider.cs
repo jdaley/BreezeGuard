@@ -12,11 +12,6 @@ namespace TinyDemo
 {
     public class TinyContextProvider : BreezeGuardContextProvider<TinyContext>
     {
-        static TinyContextProvider()
-        {
-            BreezeConfig.Instance.GetJsonSerializerSettings().ContractResolver = new BreezeGuardContractResolver();
-        }
-
         protected override string BuildJsonMetadata()
         {
             return EFContextProvider<TinyMetadataContext>.GetMetadataFromContext(new TinyMetadataContext());
