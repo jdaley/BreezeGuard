@@ -10,6 +10,15 @@ namespace BreezeGuard
 {
     public class BreezeGuardControllerAttribute : Attribute, IControllerConfiguration
     {
+        public Type ContextProviderType { get; private set; }
+
+        public BreezeGuardControllerAttribute(Type contextProviderType)
+        {
+            // TODO: contextProviderType must be a Type that extends BreezeGuardContextProvider
+
+            this.ContextProviderType = contextProviderType;
+        }
+
         public void Initialize(HttpControllerSettings controllerSettings, HttpControllerDescriptor controllerDescriptor)
         {
             controllerSettings.Formatters.Clear();

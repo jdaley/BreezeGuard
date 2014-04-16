@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
+using TinyDemo.Entities;
 
 namespace TinyDemo
 {
-    public class TinyContextProvider : EFContextProvider<TinyContext>
+    public class TinyContextProvider : BreezeGuardContextProvider<TinyContext>
     {
         static TinyContextProvider()
         {
@@ -19,6 +20,14 @@ namespace TinyDemo
         protected override string BuildJsonMetadata()
         {
             return EFContextProvider<TinyMetadataContext>.GetMetadataFromContext(new TinyMetadataContext());
+        }
+
+        protected override void OnModelCreating(ApiModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Customer>();
+            modelBuilder.Entity<Order>();
+            modelBuilder.Entity<OrderLine>();
+            modelBuilder.Entity<User>().Ignore(u => u.Password);
         }
     }
 }
