@@ -111,7 +111,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="demo.css" />
+    <Content Include="demo.js" />
     <Content Include="Global.asax" />
+    <Content Include="demo.html" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,38 @@
+﻿body {
+    font-family: 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', 'DejaVu Sans Condensed', sans-serif;
+    font-size: small;
+}
+
+#demos {
+    margin-bottom: 10px;
+}
+
+.demo-selected {
+    box-shadow: 0 0 1px 1px black;
+}
+
+#url {
+    width: 550px;
+}
+
+#requestbody {
+    width: 800px;
+    height: 100px;
+}
+
+.status-success {
+    background-color: #dfd;
+}
+
+.status-error {
+    background-color: #fdd;
+}
+
+#responsebody {
+    white-space: pre-wrap;
+    font-family: monospace;
+    background-color: #eee;
+    width: 950px;
+    padding: 3px;
+    border: 1px solid #ccc;
+}
