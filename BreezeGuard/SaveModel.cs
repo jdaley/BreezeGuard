@@ -18,9 +18,7 @@ namespace BreezeGuard
             DbContext dbContext, ApiModelBuilder apiModel)
         {
             Type saveModelType = typeof(SaveModel<>).MakeGenericType(entityType);
-            SaveModel saveModel = (SaveModel)Activator.CreateInstance(saveModelType, entityInfo);
-
-            return saveModel;
+            return (SaveModel)Activator.CreateInstance(saveModelType, entityInfo);
         }
 
         public Type EntityType { get; private set; }
@@ -45,13 +43,12 @@ namespace BreezeGuard
                 }
 
                 PropertyInfo propertyInfo = entityType.GetProperty(edmProperty.Name);
-                Type savePropertyType = typeof(SaveProperty<>).MakeGenericType(propertyInfo.PropertyType);
 
                 object originalValue;
                 bool hasOriginalValue = entityInfo.OriginalValuesMap.TryGetValue(propertyInfo.Name, out originalValue);
                 object newValue = propertyInfo.GetValue(entityInfo.Entity);
 
-                this.properties.Add(propertyInfo, (SaveProperty)Activator.CreateInstance(savePropertyType,
+                this.properties.Add(propertyInfo, SaveProperty.Create(
                     propertyInfo, hasOriginalValue, originalValue, newValue));
             }
         }
