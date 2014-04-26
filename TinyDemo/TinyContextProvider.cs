@@ -24,5 +24,31 @@ namespace TinyDemo
             modelBuilder.Entity<OrderLine>();
             modelBuilder.Entity<User>().Ignore(u => u.Password);
         }
+
+        protected override void LoadEntities(Dictionary<Type, List<SaveModel>> saveModelsMap)
+        {
+            if (saveModelsMap.ContainsKey(typeof(Order)))
+            {
+                foreach (SaveModel<Order> saveModel in saveModelsMap[typeof(Order)])
+                {
+                    if (!saveModel.IsAdded)
+                    {
+                        int orderId = ((Order)saveModel.EntityInfo.Entity).Id;
+                        saveModel.Entity = this.Context.Orders.Include(o => o.Lines).First(o => o.Id == orderId);
+                    }
+                }
+            }
+        }
+
+        protected override List<ISaveHandler> CreateSaveHandlers()
+        {
+            return new List<ISaveHandler>
+            {
+                new OrderSaveHandler()
+                {
+                    Context = this.Context
+                }
+            };
+        }
     }
 }

@@ -105,6 +105,10 @@
     <Compile Include="ExpressionHelper.cs" />
     <Compile Include="MetadataContextHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaveHandler.cs" />
+    <Compile Include="SaveModel.cs" />
+    <Compile Include="SaveProperty.cs" />
+    <Compile Include="SavePropertyState.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
