@@ -8,6 +8,8 @@ using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,11 +22,13 @@ namespace BreezeGuard
 
         private TContext context;
         private ApiModelBuilder model;
+        private Dictionary<Type, object> resources;
 
         protected BreezeGuardContextProvider()
         {
             this.context = null;
             this.model = ApiModelCache.Get(GetType(), OnModelCreating);
+            this.resources = new Dictionary<Type, object>();
         }
 
         public TContext Context
@@ -89,6 +93,11 @@ namespace BreezeGuard
             ec.Dispose();
         }
 
+        public void AddResource<TResource>(TResource resource)
+        {
+            this.resources.Add(typeof(TResource), resource);
+        }
+
         protected override void SaveChangesCore(SaveWorkState saveWorkState)
         {
             Dictionary<Type, List<SaveModel>> saveModelsMap = BuildSaveModelsMap(saveWorkState);
@@ -136,7 +145,35 @@ namespace BreezeGuard
 
         protected virtual void LoadEntities(Dictionary<Type, List<SaveModel>> saveModelsMap)
         {
-            throw new NotImplementedException();
+            foreach (var kvp in saveModelsMap)
+            {
+                ApiEntityTypeConfiguration entityTypeConfig = this.model.Entities[kvp.Key];
+                object resource = this.resources[entityTypeConfig.ResourceType];
+                IQueryable queryable = entityTypeConfig.AccessResource(resource);
+
+                // TODO: It's not always int IDs
+                PropertyInfo idPropertyInfo = kvp.Key.GetProperty("Id");
+                List<int> ids = kvp.Value.Where(m => !m.IsAdded).Select(
+                    m => (int)idPropertyInfo.GetValue(m.EntityInfo.Entity)).ToList();
+
+                var arg = Expression.Parameter(kvp.Key, "p");
+
+                var body = Expression.Call(Expression.Constant(ids), "Contains", null,
+                    Expression.Property(arg, "Id"));
+
+                var predicate = Expression.Lambda(body, arg);
+
+                var where = Expression.Call(typeof(Queryable), "Where",
+                    new Type[] { queryable.ElementType },
+                    queryable.Expression, Expression.Quote(predicate));
+
+                foreach (object entity in queryable.Provider.CreateQuery(where))
+                {
+                    int id = (int)idPropertyInfo.GetValue(entity);
+                    SaveModel saveModel = kvp.Value.First(m => (int)idPropertyInfo.GetValue(m.EntityInfo.Entity) == id);
+                    saveModel.Entity = entity;
+                }
+            }
         }
 
         private void ExecuteSaveHandlers(Dictionary<Type, List<SaveModel>> saveModelsMap)

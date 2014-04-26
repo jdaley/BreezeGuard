@@ -53,7 +53,8 @@ namespace TinyDemo.Controllers
         [HttpPost]
         public SaveResult SaveChanges(JObject saveBundle)
         {
-            return provider.SaveChanges(saveBundle);
+            this.provider.AddResource(this);
+            return this.provider.SaveChanges(saveBundle);
         }
     }
 }

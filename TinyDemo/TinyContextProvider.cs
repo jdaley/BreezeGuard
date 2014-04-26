@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
+using TinyDemo.Controllers;
 using TinyDemo.Entities;
 
 namespace TinyDemo
@@ -19,25 +20,19 @@ namespace TinyDemo
 
         protected override void OnModelCreating(ApiModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Customer>();
-            modelBuilder.Entity<Order>();
-            modelBuilder.Entity<OrderLine>();
-            modelBuilder.Entity<User>().Ignore(u => u.Password);
-        }
+            modelBuilder.Entity<Customer>()
+                .HasResource<EntitiesController>(c => c.Customers());
 
-        protected override void LoadEntities(Dictionary<Type, List<SaveModel>> saveModelsMap)
-        {
-            if (saveModelsMap.ContainsKey(typeof(Order)))
-            {
-                foreach (SaveModel<Order> saveModel in saveModelsMap[typeof(Order)])
-                {
-                    if (!saveModel.IsAdded)
-                    {
-                        int orderId = ((Order)saveModel.EntityInfo.Entity).Id;
-                        saveModel.Entity = this.Context.Orders.Include(o => o.Lines).First(o => o.Id == orderId);
-                    }
-                }
-            }
+            modelBuilder.Entity<Order>()
+                .HasResource<EntitiesController>(c => c.Orders())
+                .Allow(o => o.Lines);
+
+            modelBuilder.Entity<OrderLine>()
+                .HasResourceVia<Order>(ol => ol.Order);
+
+            modelBuilder.Entity<User>()
+                .HasResource<EntitiesController>(c => c.Users())
+                .Ignore(u => u.Password);
         }
 
         protected override List<ISaveHandler> CreateSaveHandlers()

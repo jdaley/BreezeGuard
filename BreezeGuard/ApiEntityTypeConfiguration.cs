@@ -11,12 +11,19 @@ namespace BreezeGuard
     public abstract class ApiEntityTypeConfiguration
     {
         internal Type Type { get; private set; }
+        internal Type ResourceType { get; set; }
+        internal Delegate ResourceAccessor { get; set; }
         internal Dictionary<PropertyInfo, ApiIgnoredPropertyConfiguration> IgnoredProperties { get; private set; }
 
         internal ApiEntityTypeConfiguration(Type type)
         {
             this.Type = type;
             this.IgnoredProperties = new Dictionary<PropertyInfo, ApiIgnoredPropertyConfiguration>();
+        }
+
+        internal IQueryable AccessResource(object resource)
+        {
+            return (IQueryable)this.ResourceAccessor.DynamicInvoke(resource);
         }
     }
 
@@ -25,14 +32,16 @@ namespace BreezeGuard
         internal ApiEntityTypeConfiguration()
             : base(typeof(TEntityType)) { }
 
-        public ApiEntityTypeConfiguration<TEntityType> HasResource<TController>(
-            Func<TController, IQueryable<TEntityType>> resourceMethod)
+        public ApiEntityTypeConfiguration<TEntityType> HasResource<TResource>(
+            Func<TResource, IQueryable<TEntityType>> resourceAccessor)
         {
+            this.ResourceType = typeof(TResource);
+            this.ResourceAccessor = resourceAccessor;
             return this;
         }
 
-        public ApiEntityTypeConfiguration<TEntityType> HasResourceVia<TParentEntityType>(
-            Expression<Func<TEntityType, TParentEntityType>> parentPropertyExpression)
+        public ApiEntityTypeConfiguration<TEntityType> HasResourceVia<TOwnerEntityType>(
+            Expression<Func<TEntityType, TOwnerEntityType>> parentPropertyExpression)
         {
             return this;
         }
