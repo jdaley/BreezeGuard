@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.Edm;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core.Metadata.Edm;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,49 +11,73 @@ namespace BreezeGuard
 {
     public class ApiModelBuilder
     {
-        internal Dictionary<Type, ApiEntityTypeConfiguration> Entities { get; private set; }
-        internal IEdmModel ODataModel { get; private set; }
+        private string contextName;
+        private MetadataWorkspace dbMetadata;
+        private Dictionary<Type, EntityType> dbEntityTypes;
+        private Dictionary<Type, ApiEntityTypeConfiguration> entityTypeConfigs;
+        private List<Type> ignoredEntityTypes;
 
-        internal ApiModelBuilder()
+        internal ApiModelBuilder(string contextName, MetadataWorkspace dbMetadata)
         {
-            this.Entities = new Dictionary<Type, ApiEntityTypeConfiguration>();
-            this.ODataModel = null;
+            this.contextName = contextName;
+            this.dbMetadata = dbMetadata;
+
+            ObjectItemCollection objectItemCollection =
+                (ObjectItemCollection)dbMetadata.GetItemCollection(DataSpace.OSpace);
+
+            this.dbEntityTypes = dbMetadata.GetItems<EntityType>(DataSpace.OSpace).ToDictionary(
+                et => objectItemCollection.GetClrType(et));
+
+            this.entityTypeConfigs = new Dictionary<Type, ApiEntityTypeConfiguration>();
+            this.ignoredEntityTypes = null;
         }
 
         public ApiEntityTypeConfiguration<TEntityType> Entity<TEntityType>()
             where TEntityType : class
         {
-            ApiEntityTypeConfiguration typeConfiguration;
+            Type entityType = typeof(TEntityType);
+            ApiEntityTypeConfiguration entityTypeConfig;
 
-            if (!this.Entities.TryGetValue(typeof(TEntityType), out typeConfiguration))
+            if (!this.entityTypeConfigs.TryGetValue(entityType, out entityTypeConfig))
             {
-                typeConfiguration = new ApiEntityTypeConfiguration<TEntityType>();
-                this.Entities.Add(typeof(TEntityType), typeConfiguration);
+                EntityType dbEntityType;
+
+                if (!this.dbEntityTypes.TryGetValue(entityType, out dbEntityType))
+                {
+                    throw new Exception(string.Format("There is no entity {0} in context {1}.",
+                        entityType, contextName));
+                }
+
+                entityTypeConfig = new ApiEntityTypeConfiguration<TEntityType>(contextName, dbEntityType);
+
+                this.entityTypeConfigs.Add(entityType, entityTypeConfig);
             }
 
-            return (ApiEntityTypeConfiguration<TEntityType>)typeConfiguration;
+            return (ApiEntityTypeConfiguration<TEntityType>)entityTypeConfig;
         }
 
         internal void Build()
         {
-            BuildODataModel();
+            this.ignoredEntityTypes = this.dbEntityTypes.Keys.Except(this.entityTypeConfigs.Keys).ToList();
+
+            // Clear references to EF metadata objects
+            this.dbMetadata = null;
+            this.dbEntityTypes = null;
         }
 
-        private void BuildODataModel()
+        internal IEnumerable<ApiEntityTypeConfiguration> GetEntityTypeConfigs()
         {
-            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+            return this.entityTypeConfigs.Values;
+        }
 
-            foreach (var entityTypeConfig in this.Entities.Values)
-            {
-                EntityTypeConfiguration odataEntityTypeConfig = builder.AddEntity(entityTypeConfig.Type);
+        internal bool TryGetEntityTypeConfig(Type type, out ApiEntityTypeConfiguration entityTypeConfig)
+        {
+            return this.entityTypeConfigs.TryGetValue(type, out entityTypeConfig);
+        }
 
-                foreach (var ignoredPropertyInfo in entityTypeConfig.IgnoredProperties.Keys)
-                {
-                    odataEntityTypeConfig.RemoveProperty(ignoredPropertyInfo);
-                }
-            }
-
-            this.ODataModel = builder.GetEdmModel();
+        internal IEnumerable<Type> GetIgnoredEntityTypes()
+        {
+            return this.ignoredEntityTypes;
         }
     }
 }

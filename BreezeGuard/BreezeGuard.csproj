@@ -95,15 +95,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiEntityTypeConfiguration.cs" />
-    <Compile Include="ApiIgnoredPropertyConfiguration.cs" />
+    <Compile Include="ApiPropertyConfiguration.cs" />
     <Compile Include="ApiModelBuilder.cs" />
-    <Compile Include="ApiModelCache.cs" />
+    <Compile Include="ModelCache.cs" />
     <Compile Include="BreezeGuardContextProvider.cs" />
     <Compile Include="BreezeGuardContractResolver.cs" />
     <Compile Include="BreezeGuardControllerAttribute.cs" />
     <Compile Include="BreezeGuardQueryableAttribute.cs" />
     <Compile Include="ExpressionHelper.cs" />
     <Compile Include="MetadataContextHelper.cs" />
+    <Compile Include="ODataModelGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SaveHandler.cs" />
     <Compile Include="SaveModel.cs" />

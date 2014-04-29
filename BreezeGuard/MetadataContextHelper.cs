@@ -6,6 +6,7 @@ using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,8 +15,8 @@ namespace BreezeGuard
 {
     public static class MetadataContextHelper
     {
-        private static readonly PropertyInfo clrTypeProperty = typeof(EntityType).GetProperty("ClrType",
-            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly MethodInfo IgnoreMethodInfo =
+            typeof(MetadataContextHelper).GetMethod("Ignore", BindingFlags.NonPublic | BindingFlags.Static);
 
         public static DbContext EmitMetadataContext<TBaseContext>()
         {
@@ -23,32 +24,32 @@ namespace BreezeGuard
             throw new NotImplementedException();
         }
 
-        public static void OnModelCreating<TDbContext>(DbModelBuilder modelBuilder,
-            BreezeGuardContextProvider<TDbContext> contextProvider)
-            where TDbContext : DbContext
+        public static void OnModelCreating(DbModelBuilder modelBuilder, Type contextProviderType)
         {
-            ApiModelBuilder apiModel = ApiModelCache.Get(contextProvider.GetType());
-            ObjectContext objectContext = ((IObjectContextAdapter)contextProvider.Context).ObjectContext;
+            ApiModelBuilder apiModel = ModelCache.GetApiModel(contextProviderType);
 
             // Ignore all entities not part of the API model
-            var ignoredTypes = GetEntityTypes(objectContext).Where(t => !apiModel.Entities.ContainsKey(t));
-            modelBuilder.Ignore(ignoredTypes);
+            modelBuilder.Ignore(apiModel.GetIgnoredEntityTypes());
 
             // Explicitly ignored properties
-            foreach (ApiEntityTypeConfiguration entityTypeConfiguration in apiModel.Entities.Values)
+            foreach (var entityTypeConfig in apiModel.GetEntityTypeConfigs())
             {
-                foreach (ApiIgnoredPropertyConfiguration ignoredPropertyConfiguration in entityTypeConfiguration.IgnoredProperties.Values)
+                foreach (PropertyInfo propertyInfo in entityTypeConfig.GetIgnoredProperties())
                 {
-                    ignoredPropertyConfiguration.Apply(modelBuilder);
+                    // Call the Ignore method below with the type parameters for this PropertyInfo
+                    IgnoreMethodInfo.MakeGenericMethod(entityTypeConfig.Type, propertyInfo.PropertyType).Invoke(
+                        null, new object[] { modelBuilder, propertyInfo });
                 }
             }
         }
 
-        private static List<Type> GetEntityTypes(ObjectContext objectContext)
+        private static void Ignore<TEntityType, TProperty>(DbModelBuilder modelBuilder, PropertyInfo propertyInfo)
+            where TEntityType : class
         {
-            // Get Entity Framework's EntityTypes for the model, and read the internal ClrType property of each one
-            var entityTypes = objectContext.MetadataWorkspace.GetItems<EntityType>(DataSpace.OSpace); // should this be OSpace or CSpace?
-            return entityTypes.Select(e => (Type)clrTypeProperty.GetValue(e)).ToList();
+            Expression<Func<TEntityType, TProperty>> propertyExpression =
+                ExpressionHelper.ToPropertyExpression<TEntityType, TProperty>(propertyInfo);
+
+            modelBuilder.Entity<TEntityType>().Ignore(propertyExpression);
         }
 
         public static string GetMetadataFromContext(DbContext context)

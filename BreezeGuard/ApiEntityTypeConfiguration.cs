@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core.Metadata.Edm;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -11,26 +12,55 @@ namespace BreezeGuard
     public abstract class ApiEntityTypeConfiguration
     {
         internal Type Type { get; private set; }
-        internal Type ResourceType { get; set; }
-        internal Delegate ResourceAccessor { get; set; }
-        internal Dictionary<PropertyInfo, ApiIgnoredPropertyConfiguration> IgnoredProperties { get; private set; }
+        private string contextName;
+        protected internal Type ResourceType { get; protected set; }
+        protected internal Delegate ResourceAccessor { get; protected set; }
+        private Dictionary<PropertyInfo, ApiPropertyConfiguration> propertyConfigs;
 
-        internal ApiEntityTypeConfiguration(Type type)
+        internal ApiEntityTypeConfiguration(Type type, string contextName, EntityType dbEntityType)
         {
             this.Type = type;
-            this.IgnoredProperties = new Dictionary<PropertyInfo, ApiIgnoredPropertyConfiguration>();
+            this.contextName = contextName;
+            this.ResourceType = null;
+            this.ResourceAccessor = null;
+            this.propertyConfigs = new Dictionary<PropertyInfo, ApiPropertyConfiguration>();
+
+            foreach (EdmProperty dbProperty in dbEntityType.Properties)
+            {
+                PropertyInfo propertyInfo = type.GetProperty(dbProperty.Name);
+                this.propertyConfigs.Add(propertyInfo, new ApiPropertyConfiguration(propertyInfo));
+            }
         }
 
-        internal IQueryable AccessResource(object resource)
+        internal ApiPropertyConfiguration Property(LambdaExpression propertyExpression)
         {
-            return (IQueryable)this.ResourceAccessor.DynamicInvoke(resource);
+            ApiPropertyConfiguration propertyConfig;
+            PropertyInfo propertyInfo = ExpressionHelper.ToPropertyInfo(propertyExpression);
+
+            if (!this.propertyConfigs.TryGetValue(propertyInfo, out propertyConfig))
+            {
+                throw new Exception(string.Format("Context {0} does not have a scalar property {1} for entity {2}.",
+                    this.contextName, propertyInfo.Name, this.Type));
+            }
+
+            return propertyConfig;
+        }
+
+        internal bool TryGetPropertyConfig(PropertyInfo propertyInfo, out ApiPropertyConfiguration propertyConfig)
+        {
+            return this.propertyConfigs.TryGetValue(propertyInfo, out propertyConfig);
+        }
+
+        internal IEnumerable<PropertyInfo> GetIgnoredProperties()
+        {
+            return this.propertyConfigs.Values.Where(pc => pc.Ignored).Select(pc => pc.PropertyInfo);
         }
     }
 
     public class ApiEntityTypeConfiguration<TEntityType> : ApiEntityTypeConfiguration where TEntityType : class
     {
-        internal ApiEntityTypeConfiguration()
-            : base(typeof(TEntityType)) { }
+        internal ApiEntityTypeConfiguration(string contextType, EntityType dbEntityType)
+            : base(typeof(TEntityType), contextType, dbEntityType) { }
 
         public ApiEntityTypeConfiguration<TEntityType> HasResource<TResource>(
             Func<TResource, IQueryable<TEntityType>> resourceAccessor)
@@ -55,9 +85,7 @@ namespace BreezeGuard
         public ApiEntityTypeConfiguration<TEntityType> Ignore<TProperty>(
             Expression<Func<TEntityType, TProperty>> propertyExpression)
         {
-            PropertyInfo propertyInfo = ExpressionHelper.ToPropertyInfo(propertyExpression);
-            this.IgnoredProperties[propertyInfo] = new ApiIgnoredPropertyConfiguration<TEntityType, TProperty>(
-                propertyInfo, propertyExpression);
+            Property(propertyExpression).Ignored = true;
             return this;
         }
     }

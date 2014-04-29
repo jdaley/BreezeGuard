@@ -20,7 +20,7 @@ namespace TinyDemo
         {
             base.OnModelCreating(modelBuilder);
 
-            MetadataContextHelper.OnModelCreating(modelBuilder, new TinyContextProvider());
+            MetadataContextHelper.OnModelCreating(modelBuilder, typeof(TinyContextProvider));
         }
     }
 }

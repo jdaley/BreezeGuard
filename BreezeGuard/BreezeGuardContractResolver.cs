@@ -17,17 +17,24 @@ namespace BreezeGuard
         public BreezeGuardContractResolver(Type contextProviderType)
         {
             this.ContextProviderType = contextProviderType;
-            this.model = ApiModelCache.Get(contextProviderType);
+            this.model = null;
         }
 
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             JsonProperty property = base.CreateProperty(member, memberSerialization);
 
-            ApiEntityTypeConfiguration entityTypeConfiguration;
+            if (this.model == null)
+            {
+                this.model = ModelCache.GetApiModel(this.ContextProviderType);
+            }
 
-            if (this.model.Entities.TryGetValue(member.DeclaringType, out entityTypeConfiguration) &&
-                entityTypeConfiguration.IgnoredProperties.Keys.Contains(member))
+            ApiEntityTypeConfiguration entityTypeConfig;
+            ApiPropertyConfiguration propertyConfig;
+
+            if (this.model.TryGetEntityTypeConfig(member.DeclaringType, out entityTypeConfig) &&
+                entityTypeConfig.TryGetPropertyConfig((PropertyInfo)member, out propertyConfig) &&
+                propertyConfig.Ignored)
             {
                 property.Ignored = true;
             }

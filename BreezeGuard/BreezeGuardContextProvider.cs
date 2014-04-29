@@ -15,7 +15,8 @@ using System.Threading.Tasks;
 
 namespace BreezeGuard
 {
-    public abstract class BreezeGuardContextProvider<TContext> : ContextProvider where TContext : DbContext
+    public abstract class BreezeGuardContextProvider<TContext> : ContextProvider
+        where TContext : DbContext
     {
         private static string jsonMetadata = null;
         private static object jsonMetadataLock = new object();
@@ -27,8 +28,10 @@ namespace BreezeGuard
         protected BreezeGuardContextProvider()
         {
             this.context = null;
-            this.model = ApiModelCache.Get(GetType(), OnModelCreating);
+            this.model = null;
             this.resources = new Dictionary<Type, object>();
+
+            ModelCache.RegisterCreateModelFunc(GetType(), CreateModel);
         }
 
         public TContext Context
@@ -57,6 +60,31 @@ namespace BreezeGuard
         protected virtual DbContext CreateMetadataContext()
         {
             return MetadataContextHelper.EmitMetadataContext<TContext>();
+        }
+
+        internal ApiModelBuilder Model
+        {
+            get
+            {
+                if (this.model == null)
+                {
+                    this.model = ModelCache.GetApiModel(GetType());
+                }
+
+                return this.model;
+            }
+        }
+
+        private ApiModelBuilder CreateModel()
+        {
+            ApiModelBuilder modelBuilder = new ApiModelBuilder(
+                typeof(TContext).FullName, this.ObjectContext.MetadataWorkspace);
+
+            OnModelCreating(modelBuilder);
+
+            modelBuilder.Build();
+
+            return modelBuilder;
         }
 
         protected abstract void OnModelCreating(ApiModelBuilder modelBuilder);
@@ -134,7 +162,7 @@ namespace BreezeGuard
 
                 foreach (EntityInfo entityInfo in entityInfos)
                 {
-                    saveModels.Add((SaveModel)Activator.CreateInstance(saveModelType, entityInfo, this.Context, this.model));
+                    saveModels.Add((SaveModel)Activator.CreateInstance(saveModelType, entityInfo, this.Context, this.Model));
                 }
 
                 saveModelsMap.Add(entityType, saveModels);
@@ -147,9 +175,15 @@ namespace BreezeGuard
         {
             foreach (var kvp in saveModelsMap)
             {
-                ApiEntityTypeConfiguration entityTypeConfig = this.model.Entities[kvp.Key];
+                ApiEntityTypeConfiguration entityTypeConfig;
+                
+                if (!this.Model.TryGetEntityTypeConfig(kvp.Key, out entityTypeConfig))
+                {
+                    throw new Exception("Entity type not supported.");
+                }
+                
                 object resource = this.resources[entityTypeConfig.ResourceType];
-                IQueryable queryable = entityTypeConfig.AccessResource(resource);
+                IQueryable queryable = (IQueryable)entityTypeConfig.ResourceAccessor.DynamicInvoke(resource);
 
                 // TODO: It's not always int IDs
                 PropertyInfo idPropertyInfo = kvp.Key.GetProperty("Id");

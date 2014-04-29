@@ -74,7 +74,7 @@ namespace BreezeGuard
         public SaveModel(EntityInfo entityInfo, DbContext context, ApiModelBuilder apiModel)
             : base(typeof(TEntityType), entityInfo, context, apiModel) { }
 
-        public TEntityType Entity
+        public new TEntityType Entity
         {
             get { return (TEntityType)base.Entity; }
             set { base.Entity = value; }

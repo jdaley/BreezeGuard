@@ -22,7 +22,7 @@ namespace BreezeGuard
         public override IEdmModel GetModel(Type elementClrType, HttpRequestMessage request,
             HttpActionDescriptor actionDescriptor)
         {
-            return ApiModelCache.Get(this.ContextProviderType).ODataModel;
+            return ModelCache.GetODataModel(this.ContextProviderType);
         }
     }
 }
