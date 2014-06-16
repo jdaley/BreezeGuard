@@ -3,7 +3,7 @@
         var demo = window.demos[demoIndex];
         var method = demo.method || 'GET';
         var url = window.location.protocol + "//" + window.location.host + demo.url;
-        var body = demo.body ? $('#' + demo.body).text().trim() : '';
+        var body = demo.body ? $.trim($('#' + demo.body).html()) : '';
 
         $('#demos').find('button[data-demo=' + demoIndex + ']').addClass('demo-selected');
         $('#demos').find('button[data-demo!=' + demoIndex + ']').removeClass('demo-selected');
