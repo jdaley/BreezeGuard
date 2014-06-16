@@ -128,11 +128,11 @@ namespace BreezeGuard
 
         protected override void SaveChangesCore(SaveWorkState saveWorkState)
         {
-            Dictionary<Type, List<SaveModel>> saveModelsMap = BuildSaveModelsMap(saveWorkState);
+            SaveModel saveModel = BuildSaveModel(saveWorkState);
 
-            LoadEntities(saveModelsMap);
-            ExecuteSaveHandlers(saveModelsMap);
-            ValidateSaveState(saveModelsMap);
+            LoadEntities(saveModel);
+            ExecuteSaveHandlers(saveModel);
+            ValidateSaveState(saveModel);
 
             try
             {
@@ -148,36 +148,29 @@ namespace BreezeGuard
             // TODO: Update saveWorkState entities from the ones in this.Context
         }
 
-        private Dictionary<Type, List<SaveModel>> BuildSaveModelsMap(SaveWorkState saveWorkState)
+        private SaveModel BuildSaveModel(SaveWorkState saveWorkState)
         {
-            Dictionary<Type, List<SaveModel>> saveModelsMap = new Dictionary<Type, List<SaveModel>>();
+            SaveModel saveModel = new SaveModel(this.context);
 
             foreach (var kvp in saveWorkState.SaveMap)
             {
                 Type entityType = kvp.Key;
                 List<EntityInfo> entityInfos = kvp.Value;
 
-                Type saveModelType = typeof(SaveModel<>).MakeGenericType(entityType);
-                List<SaveModel> saveModels = new List<SaveModel>();
-
-                foreach (EntityInfo entityInfo in entityInfos)
-                {
-                    saveModels.Add((SaveModel)Activator.CreateInstance(saveModelType, entityInfo, this.Context, this.Model));
-                }
-
-                saveModelsMap.Add(entityType, saveModels);
+                saveModel.AddRange(entityType, entityInfos);
             }
 
-            return saveModelsMap;
+            return saveModel;
         }
 
-        protected virtual void LoadEntities(Dictionary<Type, List<SaveModel>> saveModelsMap)
+        protected virtual void LoadEntities(SaveModel saveModel)
         {
-            foreach (var kvp in saveModelsMap)
+            foreach (SaveEntitySet saveEntitySet in saveModel.GetEntitySets())
             {
+                Type entityType = saveEntitySet.EntityType;
                 ApiEntityTypeConfiguration entityTypeConfig;
-                
-                if (!this.Model.TryGetEntityTypeConfig(kvp.Key, out entityTypeConfig))
+
+                if (!this.Model.TryGetEntityTypeConfig(entityType, out entityTypeConfig))
                 {
                     throw new Exception("Entity type not supported.");
                 }
@@ -186,11 +179,11 @@ namespace BreezeGuard
                 IQueryable queryable = (IQueryable)entityTypeConfig.ResourceAccessor.DynamicInvoke(resource);
 
                 // TODO: It's not always int IDs
-                PropertyInfo idPropertyInfo = kvp.Key.GetProperty("Id");
-                List<int> ids = kvp.Value.Where(m => !m.IsAdded).Select(
+                PropertyInfo idPropertyInfo = entityType.GetProperty("Id");
+                List<int> ids = saveEntitySet.Where(m => !m.IsAdded).Select(
                     m => (int)idPropertyInfo.GetValue(m.EntityInfo.Entity)).ToList();
 
-                var arg = Expression.Parameter(kvp.Key, "p");
+                var arg = Expression.Parameter(entityType, "p");
 
                 var body = Expression.Call(Expression.Constant(ids), "Contains", null,
                     Expression.Property(arg, "Id"));
@@ -204,25 +197,25 @@ namespace BreezeGuard
                 foreach (object entity in queryable.Provider.CreateQuery(where))
                 {
                     int id = (int)idPropertyInfo.GetValue(entity);
-                    SaveModel saveModel = kvp.Value.First(m => (int)idPropertyInfo.GetValue(m.EntityInfo.Entity) == id);
-                    saveModel.Entity = entity;
+                    SaveEntity saveEntity = saveEntitySet.First(m => (int)idPropertyInfo.GetValue(m.EntityInfo.Entity) == id);
+                    saveEntity.Entity = entity;
                 }
             }
         }
 
-        private void ExecuteSaveHandlers(Dictionary<Type, List<SaveModel>> saveModelsMap)
+        private void ExecuteSaveHandlers(SaveModel saveModel)
         {
             List<ISaveHandler> saveHandlers = CreateSaveHandlers();
 
             foreach (ISaveHandler saveHandler in saveHandlers)
             {
-                List<SaveModel> saveModels;
+                SaveEntitySet saveEntitySet = saveModel.GetEntitySet(saveHandler.EntityType);
 
-                if (saveModelsMap.TryGetValue(saveHandler.EntityType, out saveModels))
+                if (saveEntitySet != null)
                 {
-                    foreach (SaveModel saveModel in saveModels)
+                    foreach (SaveEntity saveEntity in saveEntitySet)
                     {
-                        saveHandler.Save(saveModel);
+                        saveHandler.Save(saveEntity);
                     }
                 }
             }
@@ -233,23 +226,20 @@ namespace BreezeGuard
             throw new NotImplementedException();
         }
 
-        protected virtual void ValidateSaveState(Dictionary<Type, List<SaveModel>> saveModelsMap)
+        protected virtual void ValidateSaveState(SaveModel saveModel)
         {
-            foreach (var kvp in saveModelsMap)
+            foreach (SaveEntitySet saveEntitySet in saveModel.GetEntitySets())
             {
-                Type entityType = kvp.Key;
-                List<SaveModel> saveModels = kvp.Value;
-
-                foreach (SaveModel saveModel in saveModels)
+                foreach (SaveEntity saveEntity in saveEntitySet)
                 {
                     // Check that all added/deleted entities have been processed
                     // TODO: Have they?
 
                     // Check that all property values have been processed
-                    foreach (SaveProperty saveProperty in saveModel.Properties)
+                    foreach (SaveProperty saveProperty in saveEntity.Properties)
                     {
                         if (saveProperty.State == SavePropertyState.Pending &&
-                            !saveProperty.IsNewValueEqual(saveModel.Entity))
+                            !saveProperty.IsNewValueEqual(saveEntity.Entity))
                         {
                             throw new Exception("Property value was not saved by a SaveHandler.");
                         }

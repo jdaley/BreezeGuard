@@ -11,7 +11,7 @@ namespace BreezeGuard
     {
         Type EntityType { get; }
         DbContext Context { get; set; }
-        void Save(SaveModel saveModel);
+        void Save(SaveEntity saveEntity);
     }
 
     public abstract class SaveHandler<TEntityType, TContext> : ISaveHandler
@@ -25,7 +25,7 @@ namespace BreezeGuard
             get { return typeof(TEntityType); }
         }
 
-        public abstract void Save(SaveModel<TEntityType> saveModel);
+        public abstract void Save(SaveEntity<TEntityType> saveEntity);
 
         DbContext ISaveHandler.Context
         {
@@ -33,9 +33,9 @@ namespace BreezeGuard
             set { this.Context = (TContext)value; }
         }
 
-        void ISaveHandler.Save(SaveModel saveModel)
+        void ISaveHandler.Save(SaveEntity saveEntity)
         {
-            Save((SaveModel<TEntityType>)saveModel);
+            Save((SaveEntity<TEntityType>)saveEntity);
         }
     }
 }

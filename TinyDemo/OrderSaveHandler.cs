@@ -10,11 +10,11 @@ namespace TinyDemo
 {
     public class OrderSaveHandler : SaveHandler<Order, TinyContext>
     {
-        public override void Save(SaveModel<Order> saveModel)
+        public override void Save(SaveEntity<Order> saveEntity)
         {
-            Order order = saveModel.Entity;
+            Order order = saveEntity.Entity;
 
-            if (saveModel.IsAdded)
+            if (saveEntity.IsAdded)
             {
                 order = new Order
                 {
@@ -24,7 +24,7 @@ namespace TinyDemo
                 };
 
                 this.Context.Orders.Add(order);
-                saveModel.Entity = order;
+                saveEntity.Entity = order;
             }
             else
             {
@@ -34,7 +34,7 @@ namespace TinyDemo
                 }
             }
 
-            foreach (var orderLineInfo in saveModel.Get<OrderLine>())
+            foreach (var orderLineInfo in saveEntity.Get<OrderLine>())
             {
                 OrderLine orderLine = orderLineInfo.Entity;
 
@@ -54,7 +54,7 @@ namespace TinyDemo
                 }
             }
 
-            if (saveModel.IsDeleted)
+            if (saveEntity.IsDeleted)
             {
                 this.Context.Entry(order).State = EntityState.Deleted;
             }

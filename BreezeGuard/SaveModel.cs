@@ -12,97 +12,54 @@ using System.Threading.Tasks;
 
 namespace BreezeGuard
 {
-    public abstract class SaveModel
+    /// <summary>
+    /// Holds all entity and property data relating to a BreezeGuard save operation.
+    /// </summary>
+    public class SaveModel
     {
-        public static SaveModel Create(Type entityType, EntityInfo entityInfo,
-            DbContext dbContext, ApiModelBuilder apiModel)
+        private DbContext context;
+        private Dictionary<Type, SaveEntitySet> entitySets;
+
+        internal SaveModel(DbContext context)
         {
-            Type saveModelType = typeof(SaveModel<>).MakeGenericType(entityType);
-            return (SaveModel)Activator.CreateInstance(saveModelType, entityInfo);
+            this.context = context;
+            this.entitySets = new Dictionary<Type, SaveEntitySet>();
         }
 
-        public Type EntityType { get; private set; }
-        public object Entity { get; set; }
-        public EntityInfo EntityInfo { get; private set; } // TODO: Make this internal?
-        protected Dictionary<PropertyInfo, SaveProperty> properties;
-
-        protected SaveModel(Type entityType, EntityInfo entityInfo, DbContext context, ApiModelBuilder apiModel)
+        public SaveEntitySet<TEntityType> Set<TEntityType>()
+            where TEntityType : class
         {
-            this.EntityType = entityType;
-            this.EntityInfo = entityInfo;
-            this.properties = new Dictionary<PropertyInfo, SaveProperty>();
+            return (SaveEntitySet<TEntityType>)GetOrCreateEntitySet(typeof(TEntityType));
+        }
 
-            EntityType edmEntityType = ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace.GetItem<EntityType>(
-                entityType.FullName, DataSpace.OSpace);
+        internal void AddRange(Type entityType, IEnumerable<EntityInfo> entityInfos)
+        {
+            GetOrCreateEntitySet(entityType).AddRange(entityInfos);
+        }
 
-            foreach (EdmProperty edmProperty in edmEntityType.Properties)
+        internal SaveEntitySet GetEntitySet(Type entityType)
+        {
+            SaveEntitySet entitySet;
+            this.entitySets.TryGetValue(entityType, out entitySet);
+            return entitySet;
+        }
+
+        internal IEnumerable<SaveEntitySet> GetEntitySets()
+        {
+            return this.entitySets.Values;
+        }
+
+        private SaveEntitySet GetOrCreateEntitySet(Type entityType)
+        {
+            SaveEntitySet entitySet;
+
+            if (!this.entitySets.TryGetValue(entityType, out entitySet))
             {
-                if (edmProperty.Name == "Id") // TODO
-                {
-                    continue;
-                }
-
-                PropertyInfo propertyInfo = entityType.GetProperty(edmProperty.Name);
-
-                object originalValue;
-                bool hasOriginalValue = entityInfo.OriginalValuesMap.TryGetValue(propertyInfo.Name, out originalValue);
-                object newValue = propertyInfo.GetValue(entityInfo.Entity);
-
-                this.properties.Add(propertyInfo, SaveProperty.Create(
-                    propertyInfo, hasOriginalValue, originalValue, newValue));
-            }
-        }
-
-        public IEnumerable<SaveProperty> Properties
-        {
-            get { return properties.Values; }
-        }
-
-        public bool IsAdded
-        {
-            get { return this.EntityInfo.EntityState == Breeze.ContextProvider.EntityState.Added; }
-        }
-
-        public bool IsDeleted
-        {
-            get { return this.EntityInfo.EntityState == Breeze.ContextProvider.EntityState.Deleted; }
-        }
-    }
-
-    public class SaveModel<TEntityType> : SaveModel
-    {
-        public SaveModel(EntityInfo entityInfo, DbContext context, ApiModelBuilder apiModel)
-            : base(typeof(TEntityType), entityInfo, context, apiModel) { }
-
-        public new TEntityType Entity
-        {
-            get { return (TEntityType)base.Entity; }
-            set { base.Entity = value; }
-        }
-
-        public IEnumerable<SaveModel<TSubEntityType>> Get<TSubEntityType>()
-        {
-            return Enumerable.Empty<SaveModel<TSubEntityType>>();
-        }
-
-        public SaveProperty<TProperty> Property<TProperty>(Expression<Func<TEntityType, TProperty>> propertyExpression)
-        {
-            return (SaveProperty<TProperty>)this.properties[ExpressionHelper.ToPropertyInfo(propertyExpression)];
-        }
-
-        public void Apply<TProperty>(Expression<Func<TEntityType, TProperty>> propertyExpression)
-        {
-            if (this.Entity == null)
-            {
-                throw new Exception("Entity is null.");
+                entitySet = SaveEntitySet.Create(entityType, this.context);
+                this.entitySets.Add(entityType, entitySet);
             }
 
-            Property(propertyExpression).Apply(this.Entity);
-        }
-
-        public void Ignore<TProperty>(Expression<Func<TEntityType, TProperty>> propertyExpression)
-        {
-            Property(propertyExpression).Ignore();
+            return entitySet;
         }
     }
 }
