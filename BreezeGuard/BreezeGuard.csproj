@@ -30,14 +30,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Breeze.ContextProvider">
-      <HintPath>..\packages\Breeze.Server.ContextProvider.1.4.11\lib\Breeze.ContextProvider.dll</HintPath>
+    <Reference Include="Breeze.ContextProvider, Version=1.4.0.0, Culture=neutral, PublicKeyToken=f6085f1a45e2ac59, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Breeze.Server.ContextProvider.1.4.14\lib\Breeze.ContextProvider.dll</HintPath>
     </Reference>
-    <Reference Include="Breeze.ContextProvider.EF6">
-      <HintPath>..\packages\Breeze.Server.ContextProvider.EF6.1.4.11\lib\Breeze.ContextProvider.EF6.dll</HintPath>
+    <Reference Include="Breeze.ContextProvider.EF6, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f6085f1a45e2ac59, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Breeze.Server.ContextProvider.EF6.1.4.14\lib\Breeze.ContextProvider.EF6.dll</HintPath>
     </Reference>
-    <Reference Include="Breeze.WebApi2">
-      <HintPath>..\packages\Breeze.Server.WebApi2.1.4.11\lib\Breeze.WebApi2.dll</HintPath>
+    <Reference Include="Breeze.WebApi2, Version=1.4.0.0, Culture=neutral, PublicKeyToken=f6085f1a45e2ac59, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Breeze.Server.WebApi2.1.4.14\lib\Breeze.WebApi2.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -61,7 +64,7 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
