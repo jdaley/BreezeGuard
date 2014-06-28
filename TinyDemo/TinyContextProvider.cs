@@ -18,20 +18,21 @@ namespace TinyDemo
             return new TinyMetadataContext();
         }
 
-        protected override void OnModelCreating(ApiModelBuilder modelBuilder)
+        protected override void OnApiModelCreating(ApiModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Customer>()
-                .HasResource<EntitiesController>(c => c.Customers());
+                .HasNavigation(c => c.Orders)
+                .HasNavigation(c => c.Users);
 
             modelBuilder.Entity<Order>()
-                .HasResource<EntitiesController>(c => c.Orders())
-                .Allow(o => o.Lines);
+                .HasNavigation(o => o.Customer)
+                .HasNavigation(o => o.Lines);
 
             modelBuilder.Entity<OrderLine>()
-                .HasResourceVia<Order>(ol => ol.Order);
+                .HasNavigation(ol => ol.Order);
 
             modelBuilder.Entity<User>()
-                .HasResource<EntitiesController>(c => c.Users())
+                .HasNavigation(u => u.Customer)
                 .Ignore(u => u.Password);
         }
 

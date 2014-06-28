@@ -80,14 +80,14 @@ namespace BreezeGuard
             ApiModelBuilder modelBuilder = new ApiModelBuilder(
                 typeof(TContext).FullName, this.ObjectContext.MetadataWorkspace);
 
-            OnModelCreating(modelBuilder);
+            OnApiModelCreating(modelBuilder);
 
             modelBuilder.Build();
 
             return modelBuilder;
         }
 
-        protected abstract void OnModelCreating(ApiModelBuilder modelBuilder);
+        protected abstract void OnApiModelCreating(ApiModelBuilder modelBuilder);
 
         protected override string BuildJsonMetadata()
         {

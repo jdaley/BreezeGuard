@@ -88,5 +88,11 @@ namespace BreezeGuard
             Property(propertyExpression).Ignored = true;
             return this;
         }
+
+        public ApiEntityTypeConfiguration<TEntityType> HasNavigation<TProperty>(
+            Expression<Func<TEntityType, TProperty>> propertyExpression)
+        {
+            return this;
+        }
     }
 }
