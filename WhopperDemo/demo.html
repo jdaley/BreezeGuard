@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>WhopperDemo</title>
+    <link rel="stylesheet" type="text/css" href="demo.css" />
+</head>
+<body>
+    <h1>WhopperDemo API Client</h1>
+
+    <div id="demos"></div>
+    <div id="description">&nbsp;</div>
+
+    <h2>Request</h2>
+
+    <div>
+        Method: <select id="method"><option>GET</option><option>POST</option></select>
+        URL: <input id="url" type="text" />
+        <button id="send">Send</button>
+    </div>
+    <div>
+        Body:<br />
+        <textarea id="requestbody"></textarea>
+    </div>
+
+    <h2>Response</h2>
+
+    <div>Status: <input id="status" type="text" /></div>
+    <div>
+        Body:<br />
+        <div id="responsebody"></div>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="demo.js"></script>
+
+    <script>
+        window.demos = [
+            {
+                name: 'Metadata',
+                description: 'Retrieve the Breeze metadata for regular users.',
+                url: '/breeze/Entities/Metadata'
+            },
+            {
+                name: 'Admin Metadata',
+                description: 'Retrieve the Breeze metadata for admin users.',
+                url: '/breeze/Entities/Metadata'
+            }
+        ];
+    </script>
+
+</body>
+</html>

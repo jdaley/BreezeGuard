@@ -118,6 +118,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\TinyDemo\demo.css">
+      <Link>demo.css</Link>
+    </Content>
+    <Content Include="..\TinyDemo\demo.js">
+      <Link>demo.js</Link>
+    </Content>
+    <Content Include="demo.html" />
     <Content Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -158,6 +165,10 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <PropertyGroup>
+    <PreBuildEvent>xcopy "$(SolutionDir)TinyDemo\demo.css" "$(ProjectDir)" /D /Y
+xcopy "$(SolutionDir)TinyDemo\demo.js" "$(ProjectDir)" /D /Y</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
