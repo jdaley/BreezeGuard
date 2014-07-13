@@ -11,36 +11,81 @@ namespace TinyDemo
     {
         protected override void Seed(TinyContext context)
         {
-            context.Customers.Add(new Customer
+            List<Product> products = new List<Product>
             {
-                Name = "Coconut Co"
-            });
+                new Product
+                {
+                    Description = "Lemmings",
+                    Price = 7.99M,
+                    IsActive = true,
+                    Stock = 10,
+                    WholesalePrice = 4.70M
+                },
+                new Product
+                {
+                    Description = "Lemonade",
+                    Price = 1.5M,
+                    IsActive = true,
+                    Stock = 84,
+                    WholesalePrice = 0.30M
+                },
+                new Product
+                {
+                    Description = "Lemur",
+                    Price = 300,
+                    IsActive = false,
+                    Stock = 1,
+                    WholesalePrice = 240
+                }
+            };
 
-            context.Customers.Add(new Customer
+            List<User> users = new List<User>
             {
-                Name = "Ink Inc"
-            });
+                new User
+                {
+                    UserName = "bob",
+                    Password = "s3cr3t"
+                },
+                new User
+                {
+                    UserName = "jane",
+                    Password = "p@ssword"
+                }
+            };
 
-            context.Users.Add(new User
+            List<Order> orders = new List<Order>
             {
-                UserName = "bob",
-                Password = "s3cr3t",
-                CustomerId = 1
-            });
+                new Order
+                {
+                    User = users[0],
+                    IsPaid = false,
+                    Lines = new List<OrderLine>
+                    {
+                        new OrderLine
+                        {
+                            Quantity = 2,
+                            Product = products[1]
+                        }
+                    }
+                },
+                new Order
+                {
+                    User = users[1],
+                    IsPaid = false,
+                    Lines = new List<OrderLine>
+                    {
+                        new OrderLine
+                        {
+                            Quantity = 1,
+                            Product = products[0]
+                        }
+                    }
+                }
+            };
 
-            context.Users.Add(new User
-            {
-                UserName = "jane",
-                Password = "p@ssword",
-                CustomerId = 1
-            });
-
-            context.Users.Add(new User
-            {
-                UserName = "jill",
-                Password = "u8Dj7VapL0esJhBv3",
-                CustomerId = 2
-            });
+            context.Products.AddRange(products);
+            context.Users.AddRange(users);
+            context.Orders.AddRange(orders);
         }
     }
 }

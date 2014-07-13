@@ -18,8 +18,8 @@ namespace TinyDemo
             {
                 order = new Order
                 {
+                    UserId = 1,
                     IsPaid = false,
-                    CustomerId = 1,
                     Lines = new List<OrderLine>()
                 };
 
@@ -45,8 +45,8 @@ namespace TinyDemo
                     orderLineInfo.Entity = orderLine;
                 }
 
-                orderLineInfo.Apply(ol => ol.Description);
-                orderLineInfo.Apply(ol => ol.Price);
+                orderLineInfo.Apply(ol => ol.Quantity);
+                orderLineInfo.Apply(ol => ol.ProductId);
 
                 if (orderLineInfo.IsDeleted)
                 {

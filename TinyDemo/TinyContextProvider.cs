@@ -20,20 +20,15 @@ namespace TinyDemo
 
         protected override void OnApiModelCreating(ApiModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Customer>()
-                .HasNavigation(c => c.Orders)
-                .HasNavigation(c => c.Users);
-
             modelBuilder.Entity<Order>()
-                .HasNavigation(o => o.Customer)
                 .HasNavigation(o => o.Lines);
 
             modelBuilder.Entity<OrderLine>()
-                .HasNavigation(ol => ol.Order);
+                .HasNavigation(ol => ol.Product);
 
-            modelBuilder.Entity<User>()
-                .HasNavigation(u => u.Customer)
-                .Ignore(u => u.Password);
+            modelBuilder.Entity<Product>()
+                .Ignore(p => p.Stock)
+                .Ignore(p => p.WholesalePrice);
         }
 
         protected override List<ISaveHandler> CreateSaveHandlers()

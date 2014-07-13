@@ -37,62 +37,63 @@
         window.demos = [
             {
                 name: 'Metadata',
-                description: 'Retrieve the Breeze metadata. The excluded User.Password property does not appear in metadata.',
-                url: '/breeze/Entities/Metadata'
+                description: 'Retrieve the Breeze metadata. The excluded User entity and the excluded Stock and WholesalePrice ' +
+                    'properties on Product do not appear in metadata.',
+                url: '/breeze/TinyDemo/Metadata'
             },
             {
-                name: 'All Users',
-                description: 'Fetch all users. The excluded Password property is not returned, and we can only see users with ' +
-                    'CustomerId = 1.',
-                url: '/breeze/Entities/Users'
+                name: 'Orders',
+                description: 'Fetch all orders. We can only see orders that belong to the current user.',
+                url: '/breeze/TinyDemo/Orders?$expand=Lines'
             },
             {
-                name: 'Query by Password',
-                description: 'Attempt to query Users using the excluded Password property. The server returns an error message ' +
+                name: 'Products',
+                description: 'Fetch all products. The excluded Stock and WholesalePrice properties are not returned, and we can ' +
+                    'only see active products.',
+                url: '/breeze/TinyDemo/Products'
+            },
+            {
+                name: 'Query Stock',
+                description: 'Attempt to query Products using the excluded Stock property. The server returns an error message ' +
                     'that the property does not exist.',
-                url: '/breeze/Entities/Users?$filter=Password eq \'p@ssword\''
-            },
-            {
-                name: 'OrderSummary DTO',
-                description: 'Query the OrderSummary DTO. If you inspect the query that Entity Framework runs in the database, ' +
-                    'you will see that the OData filter on the DTO property is translated to an SQL where clause.',
-                url: '/breeze/Entities/OrderSummaries?$filter=TotalAmount gt 100'
+                url: '/breeze/TinyDemo/Products?$filter=Stock gt 50'
             },
             {
                 name: 'Create Order',
-                description: 'Call SaveChanges to create a new order. See what happens if you try to change IsPaid or CustomerId.',
+                description: 'Call SaveChanges to create a new order. See what happens if you attempt to create an order with ' +
+                    'IsPaid set to true, or UserId set to another user.',
                 method: 'POST',
-                url: '/breeze/Entities/SaveChanges',
+                url: '/breeze/TinyDemo/SaveChanges',
                 body: 'createorder'
             },
             {
-                name: 'Update Order.IsPaid',
+                name: 'Update IsPaid',
                 description: 'Attempt to directly modify Order.IsPaid. The server returns an error.',
                 method: 'POST',
-                url: '/breeze/Entities/SaveChanges',
+                url: '/breeze/TinyDemo/SaveChanges',
                 body: 'updateorderispaid'
             },
             {
-                name: 'PaymentRequest DTO',
-                description: 'Save a PaymentRequest, which causes Order.IsPaid to be set server-side.',
+                name: 'ProcessPayment',
+                description: 'Call the ProcessPayment API, which sets Order.IsPaid to true using a server-side process.',
                 method: 'POST',
-                url: '/breeze/Entities/SaveChanges',
-                body: 'paymentrequestdto'
+                url: '/breeze/TinyDemo/ProcessPayment',
+                body: 'processpayment'
             },
             {
                 name: 'Update Line on Paid Order',
                 description: 'Attempt to update an order line for an order that has been paid. The server returns a validation error.',
                 method: 'POST',
-                url: '/breeze/Entities/SaveChanges',
+                url: '/breeze/TinyDemo/SaveChanges',
                 body: 'updatelineonpaidorder'
             },
             {
-                name: 'Update Another Customer\'s Order',
-                description: 'Attempt to update an order that belongs to another customer. The server returns an error that the ' +
+                name: 'Update Another User\'s Order',
+                description: 'Attempt to update an order that belongs to another user. The server returns an error that the ' +
                     'record does not exist.',
                 method: 'POST',
-                url: '/breeze/Entities/SaveChanges',
-                body: 'updateanothercustomersorder'
+                url: '/breeze/TinyDemo/SaveChanges',
+                body: 'updateanotherusersorder'
             }
         ];
     </script>
@@ -140,7 +141,7 @@
 
     </script>
 
-    <script type="text/template" id="paymentrequestdto">
+    <script type="text/template" id="processpayment">
 
     </script>
 
@@ -148,7 +149,7 @@
 
     </script>
 
-    <script type="text/template" id="updateanothercustomersorder">
+    <script type="text/template" id="updateanotherusersorder">
 
     </script>
 

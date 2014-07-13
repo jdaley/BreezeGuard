@@ -9,10 +9,10 @@ namespace TinyDemo.Entities
     {
         public int Id { get; set; }
 
-        public bool IsPaid { get; set; }
+        public int UserId { get; set; }
+        public User User { get; set; }
 
-        public int CustomerId { get; set; }
-        public Customer Customer { get; set; }
+        public bool IsPaid { get; set; }
 
         public List<OrderLine> Lines { get; set; }
     }
