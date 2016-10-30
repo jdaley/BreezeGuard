@@ -10,7 +10,7 @@ using System.Web.Http.Controllers;
 
 namespace BreezeGuard
 {
-    public class BreezeGuardQueryableAttribute : BreezeQueryableAttribute
+    public class BreezeGuardQueryableAttribute : EnableBreezeQueryAttribute
     {
         public Type ContextProviderType { get; private set; }
 
