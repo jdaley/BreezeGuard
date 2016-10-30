@@ -1,6 +1,6 @@
 using System.Web.Http;
 
-[assembly: WebActivator.PreApplicationStartMethod(
+[assembly: WebActivatorEx.PreApplicationStartMethod(
     typeof(TinyDemo.App_Start.BreezeWebApiConfig), "RegisterBreezePreStart")]
 namespace TinyDemo.App_Start {
   ///<summary>
