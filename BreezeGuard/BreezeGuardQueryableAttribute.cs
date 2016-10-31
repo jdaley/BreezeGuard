@@ -1,16 +1,12 @@
 ﻿using Breeze.WebApi2;
 using Microsoft.Data.Edm;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 
 namespace BreezeGuard
 {
-    public class BreezeGuardQueryableAttribute : BreezeQueryableAttribute
+    public class BreezeGuardQueryableAttribute : EnableBreezeQueryAttribute
     {
         public Type ContextProviderType { get; private set; }
 

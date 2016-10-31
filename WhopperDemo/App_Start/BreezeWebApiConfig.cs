@@ -1,6 +1,6 @@
 using System.Web.Http;
 
-[assembly: WebActivator.PreApplicationStartMethod(
+[assembly: WebActivatorEx.PreApplicationStartMethod(
     typeof(WhopperDemo.App_Start.BreezeWebApiConfig), "RegisterBreezePreStart")]
 namespace WhopperDemo.App_Start {
   ///<summary>

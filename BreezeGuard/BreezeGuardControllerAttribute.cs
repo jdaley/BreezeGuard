@@ -21,7 +21,7 @@ namespace BreezeGuard
             this.ContextProviderType = contextProviderType;
         }
 
-        protected override IFilterProvider GetQueryableFilterProvider(BreezeQueryableAttribute defaultFilter)
+        protected override IFilterProvider GetQueryableFilterProvider(EnableBreezeQueryAttribute defaultFilter)
         {
             return base.GetQueryableFilterProvider(new BreezeGuardQueryableAttribute(this.ContextProviderType));
         }
